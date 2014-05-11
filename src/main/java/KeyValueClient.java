@@ -1,8 +1,5 @@
 import de.ruedigermoeller.fastcast.config.FCClusterConfig;
-import de.ruedigermoeller.fastcast.remoting.FCRemoting;
-import de.ruedigermoeller.fastcast.remoting.FCTopicService;
-import de.ruedigermoeller.fastcast.remoting.FastCast;
-import de.ruedigermoeller.fastcast.remoting.RemoteMethod;
+import de.ruedigermoeller.fastcast.remoting.*;
 
 /**
  * Created by ruedi on 10.05.14.
@@ -33,6 +30,12 @@ public class KeyValueClient {
         @RemoteMethod(1)
         public void valueChanged( Object key, Object value, Object oldValue ) {
             System.out.println("received broadcast VALUE_CHANGED: k:"+key+" v:"+value+" old:"+oldValue);
+            kvService.get(key, new FCFutureResultHandler() {
+                @Override
+                public void resultReceived(Object obj, String sender) {
+                    System.out.println("get returned:"+obj);
+                }
+            });
         }
         @RemoteMethod(2)
         public void valueAdded( Object key, Object value ) {
@@ -41,7 +44,7 @@ public class KeyValueClient {
         }
         @RemoteMethod(3)
         public void valueRemoved( Object key, Object value ) {
-
+            System.out.println("received broadcast VALUE_REMOVED: k:"+key+" v:"+value);
         }
     }
 
@@ -50,9 +53,14 @@ public class KeyValueClient {
         int count = 0;
         while( true ) {
             try {
-                count = (count+1) % 1000;
+                count = (count+1) % 100;
                 Thread.sleep(1000);
-                kvService.put("hallo"+count, System.currentTimeMillis());
+                long now = System.currentTimeMillis();
+                kvService.put("hallo" + count, now);
+                if ( (count%10) == 0 ) //  throw in a remove op
+                {
+                    kvService.remove("hallo"+count);
+                }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

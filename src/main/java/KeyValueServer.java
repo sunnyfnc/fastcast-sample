@@ -23,7 +23,15 @@ public class KeyValueServer {
 
         @RemoteMethod(1)
         public void get( Object key, FCFutureResultHandler result ) {
-            result.sendResult(result);
+            result.sendResult(keyVal.get(key));
+        }
+
+        @RemoteMethod(4)
+        public void remove( Object key ) {
+            Object remove = keyVal.remove(key);
+            if ( remove != null ) {
+                broadCaster.valueRemoved(key,remove);
+            }
         }
 
         @RemoteMethod(2)
@@ -34,6 +42,12 @@ public class KeyValueServer {
             if ( isnew ) {
                 broadCaster.valueAdded(key,value);
             } else {
+                if ( oldVal == null && value == null ) {
+                    return;
+                }
+                if ( oldVal != null && oldVal.equals(value) ) {
+                    return;
+                }
                 broadCaster.valueChanged(key, value, oldVal);
             }
         }
