@@ -89,7 +89,7 @@ public class KeyValueServer {
 //        );
 
         // wire sockets/queues etc.
-        remoting.joinCluster(conf, "Receiver", null);
+        remoting.joinCluster(conf, "KVServer", null);
         // start sending
         remoting.startSending(ClusterConfig.KEY_VAL_BROADCAST, SampleKeyValueBroadcaster.class);
         // start receiving

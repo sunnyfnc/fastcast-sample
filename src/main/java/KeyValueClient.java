@@ -1,5 +1,8 @@
 import de.ruedigermoeller.fastcast.config.FCClusterConfig;
 import de.ruedigermoeller.fastcast.remoting.*;
+import de.ruedigermoeller.fastcast.service.FCMembership;
+
+import java.util.List;
 
 /**
  * Created by ruedi on 10.05.14.
@@ -45,6 +48,18 @@ public class KeyValueClient {
         @RemoteMethod(3)
         public void valueRemoved( Object key, Object value ) {
             System.out.println("received broadcast VALUE_REMOVED: k:"+key+" v:"+value);
+            // just demonstrate how to discover cluster members
+            FCMembership memberShipLocal = getRemoting().getMemberShipLocal();
+            if ( memberShipLocal != null ) // in case its not configured (see ClusterConfig)
+            {
+                System.out.println("------------- dumping members -------------------------------");
+                List<FCMembership.NodePingInfo> activeNodes = memberShipLocal.getActiveNodes();
+                for (int i = 0; i < activeNodes.size(); i++) {
+                    FCMembership.NodePingInfo nodePingInfo = activeNodes.get(i);
+                    System.out.println(nodePingInfo);
+                }
+                System.out.println("-------------------------------------------------------------");
+            }
         }
     }
 
@@ -81,7 +96,7 @@ public class KeyValueClient {
 //        );
 
         // wire sockets/queues etc.
-        remoting.joinCluster(conf, "Receiver", null);
+        remoting.joinCluster(conf, "KVClient", null);
 
         // start listening
         listener = new SampleKeyValueBroadcastListener();
