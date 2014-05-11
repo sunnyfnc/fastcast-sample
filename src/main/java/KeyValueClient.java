@@ -37,6 +37,9 @@ public class KeyValueClient {
                 @Override
                 public void resultReceived(Object obj, String sender) {
                     System.out.println("get returned:"+obj);
+                    // important =>
+                    done(); // <==== important to free callback id immediately. If several keyval servers run this would ensure you get the answer of the fastest.
+                    // ^important, else callback id will be freed by timeout (=>slow throughput)
                 }
             });
         }
